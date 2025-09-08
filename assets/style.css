@@ -1,0 +1,35 @@
+/* Glassmorphism card */
+.glass-card {
+  -webkit-backdrop-filter: blur(12px); /* Safari support */
+  backdrop-filter: blur(12px); /* Standard */
+  background-color: rgba(255, 255, 255, 0.15);
+  border-radius: 1rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.glass-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+}
+
+.glass-card .card-body {
+  color: #fff;
+}
+
+/* Scrollbar styling */
+body::-webkit-scrollbar {
+  width: 8px;
+}
+body::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+}
+body::-webkit-scrollbar-thumb {
+  background-color: rgba(26, 75, 108, 0.5);
+  border-radius: 4px;
+}
+
+/* General text color */
+.text-charcoal {
+  color: #3d3b40;
+}
