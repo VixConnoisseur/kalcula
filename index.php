@@ -1,63 +1,35 @@
-<?php
-require 'config.php';
-require 'functions.php';
+<?php include("db.php"); ?>
 
-// Start session if not started
-if (session_status() == PHP_SESSION_NONE) {
-    session_start();
-}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+    <h1>📊 Attendance Dashboard</h1>
 
-// CSRF token
-if (empty($_SESSION['csrf_token'])) {
-    $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-}
+    <?php
+    // Get today's date
+    $today = date('Y-m-d');
 
-$message = '';
+    // Query counts for Present, Absent, Late
+    $present = $conn->query("SELECT COUNT(*) AS total FROM attendance WHERE date='$today' AND status='Present'")->fetch_assoc()['total'];
+    $absent  = $conn->query("SELECT COUNT(*) AS total FROM attendance WHERE date='$today' AND status='Absent'")->fetch_assoc()['total'];
+    $late    = $conn->query("SELECT COUNT(*) AS total FROM attendance WHERE date='$today' AND status='Late'")->fetch_assoc()['total'];
+    ?>
 
-// Handle login
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
-        $message = "Invalid CSRF token.";
-    } else {
-        $username = trim($_POST['username']);
-        $password_input = $_POST['password'];
+    <div class="cards">
+        <div class="card">✔ Present Today: <?= $present ?></div>
+        <div class="card">✖ Absent Today: <?= $absent ?></div>
+        <div class="card">⏰ Late Today: <?= $late ?></div>
+    </div>
 
-        $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ?");
-        $stmt->execute([$username]);
-        $user = $stmt->fetch();
-
-        if ($user) {
-            if (is_locked($user)) {
-                $message = "Account locked. Try again later.";
-            } elseif (password_verify($password_input, $user['password'])) {
-                reset_failed_attempts($pdo, $user['user_id']);
-                $_SESSION['user_id'] = $user['user_id'];
-                $_SESSION['username'] = $user['username'];
-                $_SESSION['role'] = $user['role'];
-                session_regenerate_id(true);
-
-                if ($user['first_login']) {
-                    header('Location: change_password.php');
-                    exit();
-                }
-
-                header('Location: dashboard.php');
-                exit();
-            } else {
-                add_failed_attempt($pdo, $user['user_id']);
-                if ($user['failed_attempts'] + 1 >= 5) {
-                    lock_account($pdo, $user['user_id']);
-                    $message = "Account locked due to multiple failed attempts. Try again in 15 minutes.";
-                } else {
-                    $message = "Invalid username or password";
-                }
-            }
-        } else {
-            $message = "Invalid username or password";
-        }
-    }
-}
-
-// Load the login design
-include 'login_design.php';
-?>
+    <div style="text-align:center; margin-top:20px;">
+        <a href="records.php">📖 View Attendance Records</a>
+        <a href="add_attendance.php">➕ Add Attendance</a>
+    </div>
+</div>
+</body>
+</html>
